@@ -14,6 +14,7 @@ isort = "^7.0.0"
 psycopg2-binary = "^2.9.11"
 python-dotenv = "^1.2.1"
 pillow = "^12.0.0"
+ipython = "^9.8.0"
 
 
 [build-system]
