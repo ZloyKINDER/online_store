@@ -1,12 +1,18 @@
 from django.http.response import HttpResponse
 from django.shortcuts import render
+from catalog.models import Product, Contact
 
 
 def home(request):
+    products = Product.objects.order_by('-created_at')[:5]
+    print(list(products))
+
     return render(request, "home.html")
 
 
 def contacts(request):
+    contact = Contact.objects.first()
+
     if request.method == "POST":
         name = request.POST.get("name")
         phone = request.POST.get("phone")
@@ -19,4 +25,4 @@ def contacts(request):
             f"<p>С вами свяжутся по этому <b>{phone}</b> номеру.</p>"
         )
 
-    return render(request, "contacts.html")
+    return render(request, "contacts.html", {"contact": contact})
