@@ -5,9 +5,9 @@ from catalog.models import Product, Contact
 
 def home(request):
     products = Product.objects.order_by('-created_at')[:5]
-    print(list(products))
+    context = {'products': products}
 
-    return render(request, "home.html")
+    return render(request, "home.html", context)
 
 
 def contacts(request):
@@ -26,3 +26,9 @@ def contacts(request):
         )
 
     return render(request, "contacts.html", {"contact": contact})
+
+def product_detail(request, product_id):
+    product = Product.objects.get(id=product_id)
+    context = {'product': product}
+
+    return render(request, 'catalog/product_detail.html', context)
