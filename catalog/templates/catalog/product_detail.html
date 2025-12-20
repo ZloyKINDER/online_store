@@ -1,19 +1,19 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Детали продукта</title>
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="mb-4">{{ product.name }}</h1>
-        <h4>Категория: {{ product.category.name }}</h4>
-        <p>фото: ЗАГЛУШКА</p>
-        <p>Цена: {{ product.purchase_price }} руб.</p>
-        <p>Дата добавления: {{ product.created_at|date:"d M Y" }}</p>
-        <p>Дата последнего обновления: {{ product.updated_at|date:"d M Y" }}</p>
+{% extends 'catalog/base.html' %}
+{% block title %} Информация о продукте {% endblock %}
+{% block content%}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="{{ product.image.url }}" class="img-fluid img-thumbnail" alt="{{ product.name }}">
+        </div>
+
+        <div class="col-md-8">
+            <h1 class="mb-4">{{ product.name }}</h1>
+            <h4>Категория: {{ product.category.name }}</h4>
+            <p>Цена: {{ product.purchase_price }} руб.</p>
+            <p>Дата добавления: {{ product.created_at|date:"d M Y" }}</p>
+            <p>Дата последнего обновления: {{ product.updated_at|date:"d M Y" }}</p>
+        </div>
     </div>
-    <script src="/static/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+{% endblock %}
