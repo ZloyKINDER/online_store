@@ -55,4 +55,5 @@ def product_create(request):
         context = {"product": product}
         return render(request, "catalog/product_detail.html", context)
 
+    categories = Category.objects.all()
     return render(request, "catalog/product_create.html", {"categories": categories})
