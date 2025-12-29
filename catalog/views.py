@@ -1,19 +1,24 @@
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, TemplateView
 
 from catalog.models import Category, Contact, Product
 
 
-def index(request):
-    products = Product.objects.order_by("-created_at")[:8]
-    context = {"products": products}
-    return render(request, "catalog/index.html", context)
+class CatalogListViews(ListView):
+    model = Product
+    queryset = Product.objects.order_by("-created_at")[:8]
 
+class ContactView(TemplateView):
+    template_name = "contacts.html"
 
-def contacts(request):
-    contact = Contact.objects.first()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["contact"] = Contact.objects.first()
+        return context
 
-    if request.method == "POST":
+    def post(self, request, *args, **kwargs):
         name = request.POST.get("name")
         phone = request.POST.get("phone")
         message = request.POST.get("message")
@@ -25,35 +30,13 @@ def contacts(request):
             f"<p>С вами свяжутся по этому <b>{phone}</b> номеру.</p>"
         )
 
-    return render(request, "contacts.html", {"contact": contact})
+
+class CatalogDetailViews(DetailView):
+    model = Product
 
 
-def product_detail(request, product_id):
-    product = Product.objects.get(id=product_id)
-    context = {"product": product}
-
-    return render(request, "catalog/product_detail.html", context)
-
-
-def product_create(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        description = request.POST.get("description")
-        category_id = request.POST.get("category")
-        purchase_price = request.POST.get("purchase_price")
-        image = request.FILES.get("image")
-
-        category = get_object_or_404(Category, id=category_id)
-
-        product = Product.objects.create(
-            name=name,
-            description=description,
-            category=category,
-            purchase_price=purchase_price,
-            image=image,
-        )
-        context = {"product": product}
-        return render(request, "catalog/product_detail.html", context)
-
-    categories = Category.objects.all()
-    return render(request, "catalog/product_create.html", {"categories": categories})
+class ProductCreateView(CreateView):
+    model = Product
+    fields = ["name", "description", "category", "purchase_price", "image"]
+    template_name = "catalog/product_create.html"
+    success_url = reverse_lazy("catalog:product_list")
