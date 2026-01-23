@@ -1,7 +1,7 @@
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.views.generic import CreateView, DetailView, ListView, TemplateView
 
 from catalog.models import Category, Contact, Product
 
@@ -9,6 +9,7 @@ from catalog.models import Category, Contact, Product
 class CatalogListViews(ListView):
     model = Product
     queryset = Product.objects.order_by("-created_at")[:8]
+
 
 class ContactView(TemplateView):
     template_name = "contacts.html"
