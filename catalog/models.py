@@ -45,6 +45,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+
 class Contact(models.Model):
     email = models.EmailField(verbose_name="Email")
     phone = models.CharField(max_length=50, verbose_name="Номер телефона", blank=True)
@@ -58,5 +59,3 @@ class Contact(models.Model):
 
         def __str__(self):
             return self.email
-
-
