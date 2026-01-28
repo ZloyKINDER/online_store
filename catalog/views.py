@@ -1,14 +1,13 @@
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, TemplateView
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView, DeleteView
 
+from  .forms import CategoryForm, ProductForm
 from catalog.models import Category, Contact, Product
 
 
-class CatalogListViews(ListView):
-    model = Product
-    queryset = Product.objects.order_by("-created_at")[:8]
+
 
 
 class ContactView(TemplateView):
@@ -31,13 +30,48 @@ class ContactView(TemplateView):
             f"<p>С вами свяжутся по этому <b>{phone}</b> номеру.</p>"
         )
 
+class ProductListViews(ListView):
+    model = Product
+    queryset = Product.objects.order_by("-created_at")[:8]
 
-class CatalogDetailViews(DetailView):
+
+class ProductDetailViews(DetailView):
     model = Product
 
 
 class ProductCreateView(CreateView):
     model = Product
-    fields = ["name", "description", "category", "purchase_price", "image"]
-    template_name = "catalog/product_create.html"
+    form_class = ProductForm
+    template_name = "catalog/product_form.html"
     success_url = reverse_lazy("catalog:product_list")
+
+
+
+class ProductUpdateViews(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "catalog/product_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("catalog:product_detail", kwargs={"pk": self.object.pk})
+
+
+class ProductDeleteViews(DeleteView):
+    model = Product
+    success_url = reverse_lazy("catalog:product_list")
+
+
+class CategoryCreateViews(CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = "catalog/category_form.html"
+    success_url = reverse_lazy("catalog:product_list")
+
+class CategoryUpdateViews(UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = "catalog/category_form.html"
+    success_url = reverse_lazy("catalog:category_list")
+
+class CategoryListViews(ListView):
+    model = Category

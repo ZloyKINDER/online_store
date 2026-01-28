@@ -1,0 +1,18 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Добавить категорию{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Добавить категорию</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-4">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+
+
+</div>
+{% endblock %}
