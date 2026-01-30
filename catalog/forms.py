@@ -1,5 +1,6 @@
 from django import forms
 from .models import Category, Product
+from django.core.exceptions import ValidationError
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -10,6 +11,13 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ["name", "description", "category", "purchase_price", "image"]
+
+    def clean_purchase_price(self):
+        purchase_price = self.cleaned_data.get("purchase_price")
+
+        if purchase_price < 0:
+            raise ValidationError("Цена не может быть отрицательной")
+        return purchase_price
 
     def clean(self):
         ban_words = ["казино", "биржа", "обман", "криптовалюта", "дешево",
