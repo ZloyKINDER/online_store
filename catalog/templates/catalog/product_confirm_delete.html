@@ -1,0 +1,19 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Товар{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Вы уверены что хотите удалить этот товар?</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-4">
+          <p>{{ object.name}}</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Удалить</button>
+    </form>
+
+
+</div>
+{% endblock %}
