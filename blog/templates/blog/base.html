@@ -12,6 +12,16 @@
             <a class="p-2 btn btn-outline-primary" href="/catalog">Каталог</a>
             <a class="p-2 btn btn-outline-primary" href="/blog">Блог</a>
             <a class="p-2 btn btn-outline-primary" href="/catalog/contacts/">Контакты</a>
+            {% if user.is_authenticated %}
+            <form method="post" style="display: inline" action="{% url 'users:logout' %}">
+                {% csrf_token %}
+                <button class="p-2 btn btn-outline-primary"  type="submit">Выход</button>
+            </form>
+
+            {% else %}
+            <a class="p-2 btn btn-outline-primary" href="{% url 'users:login' %}">Вход</a>
+            <a class="p-2 btn btn-outline-primary" href="{% url 'users:register' %}">Регистрация</a>
+            {% endif %}
         </nav>
     </div>
 

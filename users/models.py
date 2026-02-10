@@ -7,7 +7,9 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, verbose_name="Email")
 
     phone = models.CharField(max_length=35, verbose_name="Телефон", null=True, help_text="Введите номер телефона")
-    avatar = models.ImageField(upload_to="users/avatars/", verbose_name="Аватар", null=True, help_text="Загрузите свой автар")
+    avatar = models.ImageField(
+        upload_to="users/avatars/", verbose_name="Аватар", null=True, help_text="Загрузите свой автар"
+    )
     country = models.CharField(max_length=30, verbose_name="Страна", null=True, help_text="Укажите страну")
 
     USERNAME_FIELD = "email"
