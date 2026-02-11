@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -15,7 +16,7 @@ class BlogListViews(ListView):
         return filtered
 
 
-class BlogCreateView(CreateView):
+class BlogCreateView(LoginRequiredMixin, CreateView):
     model = Blog
     fields = ["title", "content", "preview", "is_published"]
     template_name = "blog/blog_create.html"
@@ -32,7 +33,7 @@ class BlogDetailViews(DetailView):
         return obj
 
 
-class BlogUpdateViews(UpdateView):
+class BlogUpdateViews(LoginRequiredMixin, UpdateView):
     model = Blog
     fields = ["title", "content", "preview", "is_published"]
     template_name = "blog/blog_create.html"
@@ -41,6 +42,6 @@ class BlogUpdateViews(UpdateView):
         return reverse_lazy("blog:blog_detail", kwargs={"pk": self.object.pk})
 
 
-class BlogDeleteViews(DeleteView):
+class BlogDeleteViews(LoginRequiredMixin, DeleteView):
     model = Blog
     success_url = reverse_lazy("blog:blog_list")

@@ -1,10 +1,12 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView, DeleteView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
+
+from catalog.models import Category, Contact, Product
 
 from .forms import CategoryForm, ProductForm
-from catalog.models import Category, Contact, Product
 
 
 class ContactView(TemplateView):
@@ -33,18 +35,18 @@ class ProductListViews(ListView):
     queryset = Product.objects.order_by("-created_at")[:8]
 
 
-class ProductDetailViews(DetailView):
+class ProductDetailViews(LoginRequiredMixin, DetailView):
     model = Product
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
     success_url = reverse_lazy("catalog:product_list")
 
 
-class ProductUpdateViews(UpdateView):
+class ProductUpdateViews(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
@@ -53,19 +55,19 @@ class ProductUpdateViews(UpdateView):
         return reverse_lazy("catalog:product_detail", kwargs={"pk": self.object.pk})
 
 
-class ProductDeleteViews(DeleteView):
+class ProductDeleteViews(LoginRequiredMixin, DeleteView):
     model = Product
     success_url = reverse_lazy("catalog:product_list")
 
 
-class CategoryCreateViews(CreateView):
+class CategoryCreateViews(LoginRequiredMixin, CreateView):
     model = Category
     form_class = CategoryForm
     template_name = "catalog/category_form.html"
     success_url = reverse_lazy("catalog:product_list")
 
 
-class CategoryUpdateViews(UpdateView):
+class CategoryUpdateViews(LoginRequiredMixin, UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = "catalog/category_form.html"

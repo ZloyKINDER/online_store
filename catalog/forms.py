@@ -1,6 +1,7 @@
 from django import forms
-from .models import Category, Product
 from django.core.exceptions import ValidationError
+
+from .models import Category, Product
 
 
 class CategoryForm(forms.ModelForm):
