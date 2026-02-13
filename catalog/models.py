@@ -2,6 +2,8 @@ from tkinter.constants import CASCADE
 
 from django.db import models
 
+from django.conf import settings
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name="Наименование", help_text="Введите наименование категории")
@@ -37,10 +39,25 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего изменения")
 
+    is_published = models.BooleanField(default=False, verbose_name="Опубликовано", help_text="Отметьте для публикации")
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+        related_name="products"
+    )
+
     class Meta:
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
         ordering = ["category", "name"]
+        permissions = [
+            ('can_unpublish_product', 'Может отменять публикацию продукта'),
+            ('can_delete_any_product', 'Может удалять любой продукт')
+        ]
 
     def __str__(self):
         return self.name
