@@ -8,6 +8,12 @@ from django.http import HttpResponse
 from catalog.models import Category, Contact, Product
 from .forms import CategoryForm, ProductForm
 
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
+
+from catalog.services import get_products_by_category
+
 
 
 class ContactView(TemplateView):
@@ -33,9 +39,17 @@ class ContactView(TemplateView):
 
 class ProductListViews(ListView):
     model = Product
-    queryset = Product.objects.order_by("-created_at")[:8]
+    # queryset = Product.objects.order_by("-created_at")[:8]
+
+    def get_queryset(self):
+        queryset = cache.get('product_queryset')
+        if not queryset:
+            queryset = super().get_queryset()
+            cache.set('product_queryset', queryset, 60 * 15)  # Кешируем данные на 15 минут
+        return queryset
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductDetailViews(LoginRequiredMixin, DetailView):
     model = Product
 
@@ -126,3 +140,22 @@ class CategoryUpdateViews(LoginRequiredMixin, UpdateView):
 
 class CategoryListViews(ListView):
     model = Category
+
+
+class CategoryProductListView(ListView):
+    model = Product
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+    paginate_by = 12
+
+    def get_queryset(self):
+        from django.shortcuts import get_object_or_404
+        from .services import get_products_by_category
+
+        self.category = get_object_or_404(Category, id=self.kwargs['category_id'])
+        return get_products_by_category(self.category.id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
