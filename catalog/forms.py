@@ -20,7 +20,7 @@ class CategoryForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ["name", "description", "category", "purchase_price", "image"]
+        fields = ["name", "description", "category", "purchase_price", "image", "is_published"]
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
@@ -36,6 +36,8 @@ class ProductForm(forms.ModelForm):
         )
 
         self.fields["image"].widget.attrs.update({"class": "form-control", "placeholder": "Загрузите изображение"})
+
+
 
     def clean_purchase_price(self):
         purchase_price = self.cleaned_data.get("purchase_price")

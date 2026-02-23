@@ -1,19 +1,145 @@
+<!-- catalog/templates/catalog/product_detail.html -->
 {% extends 'catalog/base.html' %}
 {% block title %} Информация о продукте {% endblock %}
-{% block content%}
+
+{% block content %}
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-4">
-            <img src="{{ object.image.url }}" class="img-fluid img-thumbnail" alt="{{ object.name }}">
+            {% if object.image %}
+                <img src="{{ object.image.url }}" class="img-fluid img-thumbnail" alt="{{ object.name }}">
+            {% else %}
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center img-thumbnail" style="height: 300px;">
+                    <span>Нет изображения</span>
+                </div>
+            {% endif %}
         </div>
 
         <div class="col-md-8">
             <h1 class="mb-4">{{ object.name }}</h1>
-            <h4>Категория: {{ object.category.name }}</h4>
-            <p>Цена: {{ object.purchase_price }} руб.</p>
-            <p>Дата добавления: {{ object.created_at|date:"d M Y" }}</p>
-            <p>Дата последнего обновления: {{ object.updated_at|date:"d M Y" }}</p>
+
+            <!-- Информация о продукте -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Описание</h5>
+                    <p class="card-text">{{ object.description|default:"Описание отсутствует" }}</p>
+                </div>
+            </div>
+
+            <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item">
+                    <strong>Категория:</strong> {{ object.category.name }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Цена:</strong> {{ object.purchase_price }} руб.
+                </li>
+                <li class="list-group-item">
+                    <strong>Статус:</strong>
+                    {% if object.is_published %}
+                        <span class="badge bg-success">Опубликовано</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Не опубликовано</span>
+                    {% endif %}
+                </li>
+                <li class="list-group-item">
+                    <strong>Владелец:</strong>
+                    {% if object.owner %}
+                        {{ object.owner.email }}
+                    {% else %}
+                        <span class="text-muted">Не указан</span>
+                    {% endif %}
+                </li>
+                <li class="list-group-item">
+                    <strong>Дата добавления:</strong> {{ object.created_at|date:"d M Y H:i" }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Дата обновления:</strong> {{ object.updated_at|date:"d M Y H:i" }}
+                </li>
+            </ul>
+
+            <!-- Кнопки управления -->
+            <div class="mt-4">
+                <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад к списку
+                </a>
+
+                {% if user.is_authenticated %}
+                    <!-- Кнопки для владельца -->
+                    {% if user == object.owner %}
+                        <a href="{% url 'catalog:product_update' object.pk %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </a>
+                        <a href="{% url 'catalog:product_delete' object.pk %}" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Удалить
+                        </a>
+                    {% endif %}
+
+                    <!-- Кнопка для модератора (отмена публикации) -->
+                    {% if perms.catalog.can_unpublish_product and object.is_published and user != object.owner %}
+                        <form method="post" action="{% url 'catalog:product_update' object.pk %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="is_published" value="false">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-ban"></i> Отменить публикацию
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <!-- Кнопка удаления для модератора -->
+                    {% if perms.catalog.can_delete_any_product and user != object.owner %}
+                        <a href="{% url 'catalog:product_delete' object.pk %}" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Удалить (модератор)
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительная информация о продукте -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Детальная информация</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <tr>
+                            <th style="width: 200px;">ID продукта</th>
+                            <td>{{ object.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Артикул</th>
+                            <td>PRD-{{ object.id|stringformat:"06d" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Категория</th>
+                            <td>{{ object.category.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Владелец</th>
+                            <td>
+                                {% if object.owner %}
+                                    {{ object.owner.email }}<br>
+                                    <small class="text-muted">
+                                        Телефон: {{ object.owner.phone|default:"Не указан" }}<br>
+                                        Страна: {{ object.owner.country|default:"Не указана" }}
+                                    </small>
+                                {% else %}
+                                    <span class="text-muted">Не указан</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<!-- Font Awesome для иконок (опционально) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}

@@ -1,12 +1,13 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http.response import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView
+from django.http import HttpResponse
 
 from catalog.models import Category, Contact, Product
-
 from .forms import CategoryForm, ProductForm
+
 
 
 class ContactView(TemplateView):
@@ -45,19 +46,68 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     template_name = "catalog/product_form.html"
     success_url = reverse_lazy("catalog:product_list")
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        messages.success(self.request, 'Продукт успешно создан!')
+        return super().form_valid(form)
 
-class ProductUpdateViews(LoginRequiredMixin, UpdateView):
+
+class ProductUpdateViews(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Product
     form_class = ProductForm
     template_name = "catalog/product_form.html"
+
+    def test_func(self):
+        product = self.get_object()
+        user = self.request.user
+
+        if product.owner == user:
+            return True
+
+        if user.is_superuser:
+            return True
+
+        messages.error(self.request, 'Вы не являетесь владельцем этого продукта')
+        return False
+
+    def form_valid(self, form):
+        if 'is_published' in form.changed_data and not form.instance.is_published:
+            if not self.request.user.has_perm('catalog.can_unpublish_product'):
+                messages.error(self.request, 'У вас нет прав на отмену публикации')
+                return redirect('catalog:product_detail', pk=self.object.pk)
+
+        messages.success(self.request, 'Продукт успешно обновлен!')
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("catalog:product_detail", kwargs={"pk": self.object.pk})
 
 
+
 class ProductDeleteViews(LoginRequiredMixin, DeleteView):
     model = Product
     success_url = reverse_lazy("catalog:product_list")
+
+    def test_func(self):
+        """Проверка прав на удаление"""
+        product = self.get_object()
+        user = self.request.user
+
+        if product.owner == user:
+            return True
+
+        if user.has_perm('catalog.can_delete_any_product'):
+            return True
+
+        if user.is_superuser:
+            return True
+
+        messages.error(self.request, 'У вас нет прав на удаление этого продукта')
+        return False
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Продукт успешно удален!')
+        return super().delete(request, *args, **kwargs)
 
 
 class CategoryCreateViews(LoginRequiredMixin, CreateView):
